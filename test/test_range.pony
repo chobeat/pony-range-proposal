@@ -7,13 +7,12 @@ trait RangeTest
 
   fun assert_range_eq[S: (Real[S] val & Number) =U8](expected:Array[S], range:Range[S], h:TestHelper)?=>
     var i:USize = 0
-      
-    while(range.has_next())
-        do
+  
+    repeat 
           h.assert_eq[S](expected(i)?,range.next())
-        
-        i=i+1
-      end
+          i=i+1
+
+    until range.has_next() end
 
 class RangeTests is UnitTest
 
@@ -50,8 +49,8 @@ primitive RangeInit[T: (Real[T] val & Number)] is RangeTest
       let upper_bound = Inclusive[T](5)
       let r:Range[T] = Range[T](lower_bound, upper_bound , 5)
       h.assert_eq[T](r.get_increment_step(), 5)
-      h.assert_is[Bound[T]](r.get_upper_bound(), upper_bound)
-      h.assert_is[Bound[T]](r.get_lower_bound(), lower_bound)
+      h.assert_is[Bound[T]](r.get_end(), upper_bound)
+      h.assert_is[Bound[T]](r.get_begin(), lower_bound)
 
 
 
@@ -90,11 +89,36 @@ primitive RangeInclSimpleBackward[T: (Real[T] val & Number)] is RangeTest
     fun apply(h: TestHelper)? =>
       let r:Range[U8] = Range[U8](Inclusive[U8](5), Inclusive[U8](0), 1)
       let expected:Array[U8] = [5;4;3;2;1]
+      h.assert_false(r.is_forward())
       assert_range_eq(expected,r,h)?
 
 primitive RangeExclSimpleBackward[T: (Real[T] val & Number)] is RangeTest
     fun apply(h: TestHelper)? =>
       let r:Range[U8] = Range[U8](Exclusive[U8](5), Exclusive[U8](0), 1)
       let expected:Array[U8] = [4;3;2]
+
+      h.assert_false(r.is_forward())
       assert_range_eq(expected,r,h)?
 
+
+
+class RangeOverflowTests is UnitTest
+
+  fun name(): String => "overflow tests"
+  fun apply(h: TestHelper)? =>
+    RangeExclBackwardMaxValue(h)?
+
+
+primitive RangeExclBackwardMaxValue is RangeTest
+    fun apply(h: TestHelper)? =>
+      let r:Range[U8] = Range[U8](
+        Exclusive[U8](U8.max_value()),
+         Exclusive[U8](U8.max_value()-4), 
+         1)
+      let expected:Array[U8] = [
+        U8.max_value()-1
+        U8.max_value()-2
+        U8.max_value()-3
+        ]
+      
+      assert_range_eq(expected,r,h)?
