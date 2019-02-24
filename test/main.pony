@@ -10,3 +10,7 @@ actor Main is TestList
     test(RangeInit)
     test(RangeInclSimple)
     test(RangeExclSimple)
+    test(RangeInclSimpleBackward)
+    test(RangeExclSimpleBackward)
+    test(RangeInclStep3)
+    test(RangeExclStep3)
