@@ -7,10 +7,4 @@ actor Main is TestList
   new make() => None
 
   fun tag tests(test: PonyTest) =>
-    test(RangeInit)
-    test(RangeInclSimple)
-    test(RangeExclSimple)
-    test(RangeInclSimpleBackward)
-    test(RangeExclSimpleBackward)
-    test(RangeInclStep3)
-    test(RangeExclStep3)
+    test(RangeTests)
