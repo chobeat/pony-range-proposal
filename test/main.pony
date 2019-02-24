@@ -9,3 +9,4 @@ actor Main is TestList
   fun tag tests(test: PonyTest) =>
     test(RangeInit)
     test(RangeInclSimple)
+    test(RangeExclSimple)

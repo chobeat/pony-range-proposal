@@ -16,12 +16,30 @@ class RangeInit is UnitTest
 
 class RangeInclSimple is UnitTest
   fun name(): String => "Range inclusive simple"
-    fun apply(h: TestHelper) =>
+    fun apply(h: TestHelper)? =>
       let lower_bound = Inclusive[U8](0)
       let upper_bound = Inclusive[U8](5)
       let r:Range[U8] = Range[U8](lower_bound, upper_bound , 1)
-      let pairs = Iter[U8](r).zip[U8]([1;2;3;4;5].values())
-      for pair in pairs do 
-        (let a, let b) = pair
-        h.assert_eq[U8](a,b)
+      let expected:Array[U8] = [1;2;3;4;5]
+      var i:USize = 0
+      while(r.has_next())
+        do
+          h.assert_eq[U8](expected(i)?,r.next())
+        
+        i=i+1
+      end
+
+class RangeExclSimple is UnitTest
+  fun name(): String => "Range exclusive simple"
+    fun apply(h: TestHelper)? =>
+      let lower_bound = Exclusive[U8](0)
+      let upper_bound = Exclusive[U8](5)
+      let r:Range[U8] = Range[U8](lower_bound, upper_bound , 1)
+      let expected:Array[U8] = [2;3;4]
+      var i:USize = 0
+      while(r.has_next())
+        do
+          h.assert_eq[U8](expected(i)?,r.next())
+        
+        i=i+1
       end
