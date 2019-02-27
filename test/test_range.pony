@@ -64,41 +64,41 @@ primitive RangeInclSimple[T: (Real[T] val & Number) ] is RangeTest
 
 primitive RangeInclStep3[T: (Real[T] val & Number)] is RangeTest
     fun apply(h: TestHelper)? =>
-      let r:Range[U8] = Range[U8](Inclusive[U8](0), Inclusive[U8](9) , 3)
-      let expected:Array[U8] = [0;3;6;9]
-      assert_range_eq(expected,r,h)?
+      let r:Range[T] = Range[T](Inclusive[T](0), Inclusive[T](9) , 3)
+      let expected:Array[T] = [0;3;6;9]
+      assert_range_eq[T](expected,r,h)?
 
 
 primitive RangeExclSimple[T: (Real[T] val & Number)] is RangeTest
 
     fun apply(h: TestHelper)? =>
-      let r:Range[U8] = Range[U8](Exclusive[U8](0), Exclusive[U8](5) , 1)
-      let expected:Array[U8] = [1;2;3;4]
-      assert_range_eq(expected,r,h)?
+      let r:Range[T] = Range[T](Exclusive[T](0), Exclusive[T](5) , 1)
+      let expected:Array[T] = [1;2;3;4]
+      assert_range_eq[T](expected,r,h)?
 
 
 
 primitive RangeExclStep3[T: (Real[T] val & Number)] is RangeTest
     fun apply(h: TestHelper)? =>
-      let r:Range[U8] = Range[U8](Exclusive[U8](0), Exclusive[U8](10) , 3)
-      let expected:Array[U8] = [1;4;7]
-      assert_range_eq(expected,r,h)?
+      let r:Range[T] = Range[T](Exclusive[T](0), Exclusive[T](10) , 3)
+      let expected:Array[T] = [1;4;7]
+      assert_range_eq[T](expected,r,h)?
 
 
 primitive RangeInclSimpleBackward[T: (Real[T] val & Number)] is RangeTest
     fun apply(h: TestHelper)? =>
-      let r:Range[U8] = Range[U8](Inclusive[U8](5), Inclusive[U8](0), 1)
-      let expected:Array[U8] = [5;4;3;2;1]
+      let r:Range[T] = Range[T](Inclusive[T](5), Inclusive[T](0), 1)
+      let expected:Array[T] = [5;4;3;2;1]
       h.assert_false(r.is_forward())
-      assert_range_eq(expected,r,h)?
+      assert_range_eq[T](expected,r,h)?
 
 primitive RangeExclSimpleBackward[T: (Real[T] val & Number)] is RangeTest
     fun apply(h: TestHelper)? =>
-      let r:Range[U8] = Range[U8](Exclusive[U8](5), Exclusive[U8](0), 1)
-      let expected:Array[U8] = [4;3;2]
+      let r:Range[T] = Range[T](Exclusive[T](5), Exclusive[T](0), 1)
+      let expected:Array[T] = [4;3;2]
 
       h.assert_false(r.is_forward())
-      assert_range_eq(expected,r,h)?
+      assert_range_eq[T](expected,r,h)?
 
 
 
@@ -106,19 +106,47 @@ class RangeOverflowTests is UnitTest
 
   fun name(): String => "overflow tests"
   fun apply(h: TestHelper)? =>
-    RangeExclBackwardMaxValue(h)?
+    RangeExclBackwardMaxValue[U8](h)?
+    RangeExclBackwardMaxValue[U16](h)?
+    RangeExclBackwardMaxValue[U32](h)?
+    RangeExclBackwardMaxValue[U64](h)?
+    RangeExclBackwardMaxValue[I64](h)?
+    RangeExclBackwardMaxValue[F64](h)?
+
+    
+    RangeExclForwardMinValue[U8](h)?
+    RangeExclForwardMinValue[U16](h)?
+    RangeExclForwardMinValue[U32](h)?
+    RangeExclForwardMinValue[U64](h)?
+    RangeExclForwardMinValue[I64](h)?
+    RangeExclForwardMinValue[F64](h)?
 
 
-primitive RangeExclBackwardMaxValue is RangeTest
+primitive RangeExclBackwardMaxValue[T: (Real[T] val & Number)] is RangeTest
     fun apply(h: TestHelper)? =>
-      let r:Range[U8] = Range[U8](
-        Exclusive[U8](U8.max_value()),
-         Exclusive[U8](U8.max_value()-4), 
+      let r:Range[T] = Range[T](
+        Exclusive[T](T.max_value()),
+         Exclusive[T](T.max_value()-4), 
          1)
-      let expected:Array[U8] = [
-        U8.max_value()-1
-        U8.max_value()-2
-        U8.max_value()-3
+      let expected:Array[T] = [
+        T.max_value()-1
+        T.max_value()-2
+        T.max_value()-3
         ]
       
-      assert_range_eq(expected,r,h)?
+      assert_range_eq[T](expected,r,h)?
+
+
+primitive RangeExclForwardMinValue[T: (Real[T] val & Number)] is RangeTest
+    fun apply(h: TestHelper)? =>
+      let r:Range[T] = Range[T](
+        Exclusive[T](T.min_value()),
+         Exclusive[T](T.min_value()+4), 
+         1)
+      let expected:Array[T] = [
+        T.min_value()+1
+        T.min_value()+2
+        T.min_value()+3
+        ]
+      
+      assert_range_eq[T](expected,r,h)?
