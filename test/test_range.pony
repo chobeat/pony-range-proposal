@@ -5,14 +5,24 @@ use "../range-proposal"
 
 trait RangeTest
 
+
+
   fun assert_range_eq[S: (Real[S] val & Number) =U8](expected:Array[S], range:Range[S], h:TestHelper)?=>
     var i:USize = 0
-  
-    repeat 
-          h.assert_eq[S](expected(i)?,range.next())
+    if expected.size()==0
+      then
+          h.log(range.get_increment_step().string())
+          h.log(range.is_forward().string())
+
+          h.assert_false(range.has_next())
+      else
+        repeat 
+          let v=range.next()
+          h.assert_eq[S](expected(i)?,v)
           i=i+1
 
-    until range.has_next() end
+        until range.has_next() end
+      end
 
 class RangeTests is UnitTest
 
@@ -113,7 +123,7 @@ class RangeOverflowTests is UnitTest
     RangeExclBackwardMaxValue[I64](h)?
     RangeExclBackwardMaxValue[F64](h)?
 
-    
+
     RangeExclForwardMinValue[U8](h)?
     RangeExclForwardMinValue[U16](h)?
     RangeExclForwardMinValue[U32](h)?
@@ -148,5 +158,37 @@ primitive RangeExclForwardMinValue[T: (Real[T] val & Number)] is RangeTest
         T.min_value()+2
         T.min_value()+3
         ]
+      
+      assert_range_eq[T](expected,r,h)?
+
+
+
+
+class RangeErrorTests is UnitTest
+
+  fun name(): String => "error tests, they should always return empty list"
+  fun apply(h: TestHelper)? =>
+    RangeErrorStepBack[I8](h)?
+    RangeErrorStepFor[I8](h)?
+
+
+
+primitive RangeErrorStepBack[T: (Real[T] val & Number)] is RangeTest
+    fun apply(h: TestHelper)? =>
+      let r:Range[T] = Range[T](
+        Exclusive[T](5),
+         Exclusive[T](0), 
+         -1)
+      let expected:Array[T] = []
+      assert_range_eq[T](expected,r,h)?
+
+
+primitive RangeErrorStepFor[T: (Real[T] val & Number)] is RangeTest
+    fun apply(h: TestHelper)? =>
+      let r:Range[T] = Range[T](
+        Exclusive[T](0),
+         Exclusive[T](5), 
+         -1)
+      let expected:Array[T] = []
       
       assert_range_eq[T](expected,r,h)?

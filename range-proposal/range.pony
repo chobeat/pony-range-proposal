@@ -43,32 +43,41 @@ class Range[T: (Real[T] val & Number) = USize]
   let _step: T
   let _is_forward:Bool
   var _current:T
-  
+  let _is_invalid:Bool
+
   new create(b: Bound[T], e: Bound[T], step: T=1) =>
     _begin= b
     _end = e
-    /* TODO: check behavior with begin and end with close values*/
 
     _is_forward = _begin.get_value() < _end.get_value()
+
+    _is_invalid = (step < 1)
     _step = if _is_forward then
-                consume step 
+               step 
             else 
-              - (consume step) 
+              - step
             end
 
-         _current = _begin.get_lower(_is_forward)
+    _current = _begin.get_lower(_is_forward)
+
+
  fun is_forward():Bool=>
   _is_forward
 
+ fun is_invalid():Bool=>
+  _is_invalid
+
   fun has_next(): Bool => 
-    if _is_forward
+    if _is_invalid then
+      false
+
+    elseif _is_forward
       then
         _current <= _end.get_upper(_is_forward) 
-      else
+    else
         _current <= _begin.get_lower(_is_forward)
     end
 
-  
   fun ref next(): T =>
     if has_next() then
       let result = _current
