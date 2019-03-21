@@ -11,9 +11,6 @@ trait RangeTest
     var i:USize = 0
     if expected.size()==0
       then
-          h.log(range.get_increment_step().string())
-          h.log(range.is_forward().string())
-
           h.assert_false(range.has_next())
       else
         repeat 
@@ -29,6 +26,7 @@ class RangeTests is UnitTest
   fun name(): String => "range tests"
   fun apply(h: TestHelper)? =>
     RangeInit[U8](h)
+    RangeIncl[U8](h)
     RangeInclSimple[U8](h)?
     RangeInclStep3[U8](h)?
     RangeExclSimple[U8](h)?
@@ -37,6 +35,7 @@ class RangeTests is UnitTest
     RangeExclSimpleBackward[U8](h)?
 
     RangeInit[F32](h)
+    RangeIncl[F32](h)
     RangeInclSimple[F32](h)?
     RangeInclStep3[F32](h)?
     RangeExclSimple[F32](h)?
@@ -46,6 +45,7 @@ class RangeTests is UnitTest
 
 
     RangeInit[I32](h)
+    RangeIncl[I32](h)
     RangeInclSimple[I32](h)?
     RangeInclStep3[I32](h)?
     RangeExclSimple[I32](h)?
@@ -59,9 +59,15 @@ primitive RangeInit[T: (Real[T] val & Number)] is RangeTest
       let upper_bound = Inclusive[T](5)
       let r:Range[T] = Range[T](lower_bound, upper_bound , 5)
       h.assert_eq[T](r.get_increment_step(), 5)
-      h.assert_is[Bound[T]](r.get_end(), upper_bound)
       h.assert_is[Bound[T]](r.get_begin(), lower_bound)
+      h.assert_is[Bound[T]](r.get_end(), upper_bound)
 
+primitive RangeIncl[T: (Real[T] val & Number)] is RangeTest
+    fun apply(h: TestHelper) =>
+      let r:Range[T] = Range[T].incl(1, 5 , 5)
+      h.assert_eq[T](r.get_increment_step(), 5)
+      h.assert_eq[Bound[T]](r.get_begin(), Inclusive[T](1))
+      h.assert_eq[Bound[T]](r.get_end(), Inclusive[T](5))
 
 
 primitive RangeInclSimple[T: (Real[T] val & Number) ] is RangeTest
@@ -70,6 +76,10 @@ primitive RangeInclSimple[T: (Real[T] val & Number) ] is RangeTest
       let expected:Array[T] = [0;1;2;3;4;5]
       assert_range_eq[T](expected,r,h)?
 
+      let r2:Range[T] = Range[T].incl(0,5,1)
+      assert_range_eq[T](expected,r2,h)?
+
+
 
 
 primitive RangeInclStep3[T: (Real[T] val & Number)] is RangeTest
@@ -77,6 +87,10 @@ primitive RangeInclStep3[T: (Real[T] val & Number)] is RangeTest
       let r:Range[T] = Range[T](Inclusive[T](0), Inclusive[T](9) , 3)
       let expected:Array[T] = [0;3;6;9]
       assert_range_eq[T](expected,r,h)?
+
+      let r2:Range[T] = Range[T].incl(0,9,3)
+      assert_range_eq[T](expected,r2,h)?
+
 
 
 primitive RangeExclSimple[T: (Real[T] val & Number)] is RangeTest
