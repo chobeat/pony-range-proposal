@@ -14,6 +14,7 @@ trait RangeTest
           h.assert_false(range.has_next())
       else
         repeat 
+
           let v=range.next()
           h.assert_eq[S](expected(i)?,v)
           i=i+1
@@ -27,6 +28,7 @@ class RangeTests is UnitTest
   fun apply(h: TestHelper)? =>
     RangeInit[U8](h)
     RangeIncl[U8](h)
+    RangeTo[U8](h)
     RangeInclSimple[U8](h)?
     RangeInclStep3[U8](h)?
     RangeExclSimple[U8](h)?
@@ -34,8 +36,10 @@ class RangeTests is UnitTest
     RangeInclSimpleBackward[U8](h)?
     RangeExclSimpleBackward[U8](h)?
 
+
     RangeInit[F32](h)
     RangeIncl[F32](h)
+    RangeTo[F32](h)
     RangeInclSimple[F32](h)?
     RangeInclStep3[F32](h)?
     RangeExclSimple[F32](h)?
@@ -46,6 +50,7 @@ class RangeTests is UnitTest
 
     RangeInit[I32](h)
     RangeIncl[I32](h)
+    RangeTo[I32](h)
     RangeInclSimple[I32](h)?
     RangeInclStep3[I32](h)?
     RangeExclSimple[I32](h)?
@@ -61,6 +66,7 @@ primitive RangeInit[T: (Real[T] val & Number)] is RangeTest
       h.assert_eq[T](r.get_increment_step(), 5)
       h.assert_is[Bound[T]](r.get_begin(), lower_bound)
       h.assert_is[Bound[T]](r.get_end(), upper_bound)
+      h.assert_true(r.has_next())
 
 primitive RangeIncl[T: (Real[T] val & Number)] is RangeTest
     fun apply(h: TestHelper) =>
@@ -68,7 +74,15 @@ primitive RangeIncl[T: (Real[T] val & Number)] is RangeTest
       h.assert_eq[T](r.get_increment_step(), 5)
       h.assert_eq[Bound[T]](r.get_begin(), Inclusive[T](1))
       h.assert_eq[Bound[T]](r.get_end(), Inclusive[T](5))
+      h.assert_true(r.has_next())
 
+primitive RangeTo[T: (Real[T] val & Number)] is RangeTest
+    fun apply(h: TestHelper) =>
+      let r:Range[T] = Range[T].to(5 , 5)
+      h.assert_eq[T](r.get_increment_step(), 5)
+      h.assert_eq[Bound[T]](r.get_begin(), Inclusive[T](0))
+      h.assert_eq[Bound[T]](r.get_end(), Inclusive[T](5))
+      h.assert_true(r.has_next())
 
 primitive RangeInclSimple[T: (Real[T] val & Number) ] is RangeTest
     fun apply(h: TestHelper)? =>
@@ -157,7 +171,7 @@ primitive RangeExclBackwardMaxValue[T: (Real[T] val & Number)] is RangeTest
         T.max_value()-2
         T.max_value()-3
         ]
-      
+      h.assert_false(r.is_invalid())
       assert_range_eq[T](expected,r,h)?
 
 
@@ -173,6 +187,7 @@ primitive RangeExclForwardMinValue[T: (Real[T] val & Number)] is RangeTest
         T.min_value()+3
         ]
       
+      h.assert_false(r.is_invalid())
       assert_range_eq[T](expected,r,h)?
 
 
@@ -184,6 +199,7 @@ class RangeErrorTests is UnitTest
   fun apply(h: TestHelper)? =>
     RangeErrorStepBack[I8](h)?
     RangeErrorStepFor[I8](h)?
+    RangeErrorNoValues[I8](h)?
 
 
 
@@ -206,3 +222,38 @@ primitive RangeErrorStepFor[T: (Real[T] val & Number)] is RangeTest
       let expected:Array[T] = []
       
       assert_range_eq[T](expected,r,h)?
+
+
+
+primitive RangeErrorNoValues[T: (Real[T] val & Number)] is RangeTest
+    fun apply(h: TestHelper)? =>
+      let r:Range[T] = Range[T](
+        Exclusive[T](4),
+         Exclusive[T](4), 
+         1)
+      let expected:Array[T] = []
+      
+      assert_range_eq[T](expected,r,h)?
+
+
+
+class BoundTest is UnitTest
+
+  fun name(): String => "Testing bound features"
+  fun apply(h: TestHelper) =>
+    BoundEquality[U8](h)
+    BoundEquality[I8](h)
+    BoundEquality[F32](h)
+
+
+
+primitive BoundEqualityIncl[T: (Real[T] val & Number)] is RangeTest
+  fun apply(h:TestHelper) =>
+    let b = Inclusive[T](1)
+    let e = Inclusive[T](1)
+    h.assert_true(b==e)
+
+    let b_excl = Exclusive[T](1)
+    let e_excl = Exclusive[T](1)
+    h.assert_true(be==ee)
+    

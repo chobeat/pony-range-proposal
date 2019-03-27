@@ -1,16 +1,9 @@
-use "debug"
-
 trait val Bound[T: (Real[T] val & Number) = USize] is (Equatable[Bound[T]] & Stringable)
   fun get_value():T
   fun get_upper(is_forward:Bool):T
   fun get_lower(is_forward:Bool):T
-  fun eq(that:Bound[T]):Bool=>
-    // TODO: find a better way to compare to another Bound
-    (this.get_value()==that.get_value()) and 
-    (this.get_upper(true)==that.get_upper(true)) and 
-    (this.get_lower(true)==that.get_lower(true)) and 
-    (this.get_upper(false)==that.get_upper(false)) and 
-    (this.get_lower(false)==that.get_lower(false)) 
+
+
 
 class val Inclusive[T: (Real[T] val & Number) = USize] is Bound[T]
   let v: T
@@ -27,6 +20,13 @@ class val Inclusive[T: (Real[T] val & Number) = USize] is Bound[T]
 
   fun string(): String iso^ =>
     ("Inclusive("+v.string()+")").string()
+
+  fun eq(that:Bound[T]):Bool =>
+    match that
+    | let i:Inclusive[T]=> i.get_value()==this.get_value()
+    else
+      false
+    end
 
 class val Exclusive[T: (Real[T] val & Number) = USize] is Bound[T]
   let v: T
@@ -49,7 +49,12 @@ class val Exclusive[T: (Real[T] val & Number) = USize] is Bound[T]
     else
       v-1
     end
-
+  fun eq(that:Bound[T]):Bool =>
+    match that
+    | let i:Exclusive[T]=> i.get_value()==this.get_value()
+    else
+      false
+    end
   fun string(): String iso^ =>
     ("Exclusive("+v.string()+")").string()
 
@@ -64,10 +69,9 @@ class Range[T: (Real[T] val & Number) = USize]
   new create(b: Bound[T], e: Bound[T], step: T=1) =>
     _begin= b
     _end = e
-
     _is_forward = _begin.get_value() < _end.get_value()
+    _is_invalid = (step < 1) or (_begin==_end)
 
-    _is_invalid = (step < 1)
     _step = if _is_forward then
                step 
             else 
@@ -75,14 +79,15 @@ class Range[T: (Real[T] val & Number) = USize]
             end
 
     _current = _begin.get_lower(_is_forward)
+
 
   new incl(b: T, e: T, step: T=1) =>
     // TODO: define this constructor as a function of the main once possible
     _begin= Inclusive[T](b)
     _end = Inclusive[T](e)
     _is_forward = _begin.get_value() < _end.get_value()
-
-    _is_invalid = (step < 1)
+    
+    _is_invalid = (step < 1) or (_begin==_end)
     _step = if _is_forward then
                step 
             else 
@@ -90,6 +95,24 @@ class Range[T: (Real[T] val & Number) = USize]
             end
 
     _current = _begin.get_lower(_is_forward)
+
+ 
+ new to(e:T, step:T=1)=>
+    // TODO: define this constructor as a function of the main once possible
+    
+    _begin=  Inclusive[T](0)
+    _end = Inclusive[T](e)
+    _is_forward = _begin.get_value() < _end.get_value()
+
+    _is_invalid = (step < 1) or (_begin==_end)
+    _step = if _is_forward then
+               step 
+            else 
+              - step
+            end
+
+    _current = _begin.get_lower(_is_forward)
+  
 
  fun is_forward():Bool=>
   _is_forward
@@ -109,13 +132,9 @@ class Range[T: (Real[T] val & Number) = USize]
     end
 
   fun ref next(): T =>
-    if has_next() then
       let result = _current
       _current = _current + _step
       result
-    else
-      _current
-    end
 
   fun get_increment_step():T=>
     _step

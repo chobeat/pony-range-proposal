@@ -8,5 +8,6 @@ actor Main is TestList
 
   fun tag tests(test: PonyTest) =>
     test(RangeTests)
-    test(RangeOverflowTests)
+    //test(RangeOverflowTests)
     test(RangeErrorTests)
+    test(BoundTest)
