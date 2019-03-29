@@ -1,11 +1,10 @@
 use "ponytest"
 use c="collections"
+use "collections/persistent"
 use "itertools"
 use "../range-proposal"
 
 trait RangeTest
-
-
 
   fun assert_range_eq[S: (Real[S] val & Number) =U8](expected:Array[S], range:Range[S], h:TestHelper)?=>
     var i:USize = 0
@@ -21,6 +20,16 @@ trait RangeTest
 
         until range.has_next() end
       end
+  fun assert_max_min[S: (Real[S] val & Number) =U8](range:Range[S], min:S, max:S, h:TestHelper)=>
+      
+    let first = range.next()
+    h.assert_eq[S](first,min)
+    var last:S = 0
+    for v in range
+    do
+      last=v
+    end
+    h.assert_eq[S](last,max)
 
 class RangeTests is UnitTest
 
@@ -62,24 +71,24 @@ primitive RangeInit[T: (Real[T] val & Number)] is RangeTest
     fun apply(h: TestHelper) =>
       let lower_bound = Inclusive[T](1)
       let upper_bound = Inclusive[T](5)
-      let r:Range[T] = Range[T](lower_bound, upper_bound , 5)
-      h.assert_eq[T](r.get_increment_step(), 5)
+      let r:Range[T] = Range[T](lower_bound, upper_bound , 1)
+      h.assert_eq[T](r.get_increment_step(), 1)
       h.assert_is[Bound[T]](r.get_begin(), lower_bound)
       h.assert_is[Bound[T]](r.get_end(), upper_bound)
       h.assert_true(r.has_next())
 
 primitive RangeIncl[T: (Real[T] val & Number)] is RangeTest
     fun apply(h: TestHelper) =>
-      let r:Range[T] = Range[T].incl(1, 5 , 5)
-      h.assert_eq[T](r.get_increment_step(), 5)
+      let r:Range[T] = Range[T].incl(1, 5 , 1)
+      h.assert_eq[T](r.get_increment_step(), 1)
       h.assert_eq[Bound[T]](r.get_begin(), Inclusive[T](1))
       h.assert_eq[Bound[T]](r.get_end(), Inclusive[T](5))
       h.assert_true(r.has_next())
 
 primitive RangeTo[T: (Real[T] val & Number)] is RangeTest
     fun apply(h: TestHelper) =>
-      let r:Range[T] = Range[T].to(5 , 5)
-      h.assert_eq[T](r.get_increment_step(), 5)
+      let r:Range[T] = Range[T].to(5 , 1)
+      h.assert_eq[T](r.get_increment_step(), 1)
       h.assert_eq[Bound[T]](r.get_begin(), Inclusive[T](0))
       h.assert_eq[Bound[T]](r.get_end(), Inclusive[T](5))
       h.assert_true(r.has_next())
@@ -190,7 +199,19 @@ primitive RangeExclForwardMinValue[T: (Real[T] val & Number)] is RangeTest
       h.assert_false(r.is_invalid())
       assert_range_eq[T](expected,r,h)?
 
-
+class RangeCoverageTests is UnitTest
+  fun name(): String => "test to guarantee that the Range can fully express all the numbers for every datatype"
+  fun apply(h: TestHelper) =>
+    RangeMinMaxTest[U8](h)
+    RangeMinMaxTest[I8](h)
+    
+primitive RangeMinMaxTest[T: (Real[T] val & Number)] is RangeTest
+    fun apply(h: TestHelper) =>
+      let r:Range[T] = Range[T](
+        Inclusive[T](T.min_value()),
+         Inclusive[T](T.max_value()), 
+         1)
+       assert_max_min[T](r, T.min_value(), T.max_value(),h)
 
 
 class RangeErrorTests is UnitTest
@@ -200,8 +221,6 @@ class RangeErrorTests is UnitTest
     RangeErrorStepBack[I8](h)?
     RangeErrorStepFor[I8](h)?
     RangeErrorNoValues[I8](h)?
-
-
 
 primitive RangeErrorStepBack[T: (Real[T] val & Number)] is RangeTest
     fun apply(h: TestHelper)? =>
@@ -245,9 +264,11 @@ class BoundTest is UnitTest
     BoundEquality[I8](h)
     BoundEquality[F32](h)
 
+    BoundMinMax[U8](h)
 
 
-primitive BoundEqualityIncl[T: (Real[T] val & Number)] is RangeTest
+
+primitive BoundEquality[T: (Real[T] val & Number)] is RangeTest
   fun apply(h:TestHelper) =>
     let b = Inclusive[T](1)
     let e = Inclusive[T](1)
@@ -255,5 +276,17 @@ primitive BoundEqualityIncl[T: (Real[T] val & Number)] is RangeTest
 
     let b_excl = Exclusive[T](1)
     let e_excl = Exclusive[T](1)
-    h.assert_true(be==ee)
+    h.assert_true(b_excl==e_excl)
+
+
+primitive BoundMinMax[T: (Real[T] val & Number)] is RangeTest
+  fun apply(h:TestHelper) =>
+    let min_bound = Inclusive[T](T.min_value())
+    let max_bound = Inclusive[T](T.max_value())
+
+    h.assert_eq[T](min_bound.get_upper(true),T.min_value())
+    h.assert_eq[T](min_bound.get_lower(false),T.min_value())
+    h.assert_eq[T](max_bound.get_upper(true),T.max_value())
+    h.assert_eq[T](max_bound.get_lower(true),T.max_value())
+    
     

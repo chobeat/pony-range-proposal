@@ -4,7 +4,6 @@ trait val Bound[T: (Real[T] val & Number) = USize] is (Equatable[Bound[T]] & Str
   fun get_lower(is_forward:Bool):T
 
 
-
 class val Inclusive[T: (Real[T] val & Number) = USize] is Bound[T]
   let v: T
   new val create(value: T) =>
@@ -58,27 +57,30 @@ class val Exclusive[T: (Real[T] val & Number) = USize] is Bound[T]
   fun string(): String iso^ =>
     ("Exclusive("+v.string()+")").string()
 
+
 class Range[T: (Real[T] val & Number) = USize]
   let _begin: Bound[T]
   let _end: Bound[T]
   let _step: T
   let _is_forward:Bool
-  var _current:T
+  var _next:T
   let _is_invalid:Bool
+  var _is_last:Bool
 
   new create(b: Bound[T], e: Bound[T], step: T=1) =>
     _begin= b
     _end = e
     _is_forward = _begin.get_value() < _end.get_value()
+    // TODO: this condition doesn't always work with float arithmetics
     _is_invalid = (step < 1) or (_begin==_end)
-
+    _is_last=false
     _step = if _is_forward then
                step 
             else 
               - step
             end
 
-    _current = _begin.get_lower(_is_forward)
+    _next = _begin.get_lower(_is_forward)
 
 
   new incl(b: T, e: T, step: T=1) =>
@@ -86,15 +88,15 @@ class Range[T: (Real[T] val & Number) = USize]
     _begin= Inclusive[T](b)
     _end = Inclusive[T](e)
     _is_forward = _begin.get_value() < _end.get_value()
-    
     _is_invalid = (step < 1) or (_begin==_end)
+    _is_last=false
     _step = if _is_forward then
                step 
             else 
               - step
             end
 
-    _current = _begin.get_lower(_is_forward)
+    _next = _begin.get_lower(_is_forward)
 
  
  new to(e:T, step:T=1)=>
@@ -103,7 +105,7 @@ class Range[T: (Real[T] val & Number) = USize]
     _begin=  Inclusive[T](0)
     _end = Inclusive[T](e)
     _is_forward = _begin.get_value() < _end.get_value()
-
+    _is_last=false
     _is_invalid = (step < 1) or (_begin==_end)
     _step = if _is_forward then
                step 
@@ -111,7 +113,7 @@ class Range[T: (Real[T] val & Number) = USize]
               - step
             end
 
-    _current = _begin.get_lower(_is_forward)
+    _next = _begin.get_lower(_is_forward)
   
 
  fun is_forward():Bool=>
@@ -121,20 +123,36 @@ class Range[T: (Real[T] val & Number) = USize]
   _is_invalid
 
   fun has_next(): Bool => 
-    if _is_invalid then
-      false
+    
+    not (_is_invalid or _is_last)
+      
 
-    elseif _is_forward
-      then
-        _current <= _end.get_upper(_is_forward) 
+  fun _will_overflow(current:T):Bool =>
+    if _is_forward
+    then
+      _next < current
     else
-        _current <= _begin.get_lower(_is_forward)
+      _next > current
     end
 
+  fun _bound_reached(current:T):Bool=>
+    if _is_forward
+    then 
+      current == _end.get_upper(_is_forward)
+    else
+      current == _end.get_lower(_is_forward)
+    end
+
+  fun _is_last_value(current:T):Bool=>
+    _will_overflow(current) or _bound_reached(current)
+
   fun ref next(): T =>
-      let result = _current
-      _current = _current + _step
-      result
+      let current = _next
+      _is_last=_is_last_value(current)
+      _next = _next + _step
+      current
+
+
 
   fun get_increment_step():T=>
     _step

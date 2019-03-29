@@ -11,3 +11,4 @@ actor Main is TestList
     //test(RangeOverflowTests)
     test(RangeErrorTests)
     test(BoundTest)
+    test(RangeCoverageTests)
