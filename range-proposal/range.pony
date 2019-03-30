@@ -148,7 +148,7 @@ class Range[T: (Real[T] val & Number) = USize]
     end
 
   fun _bound_reached(current:T):Bool=>
-    let bound = if _is_forward _end.get_upper(_is_forward) else _end.get_lower(_is_forward) end
+    let bound = if _is_forward then _end.get_upper(_is_forward) else _end.get_lower(_is_forward) end
 
     current == bound
 

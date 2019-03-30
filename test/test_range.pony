@@ -20,16 +20,16 @@ trait RangeTest
 
         until range.has_next() end
       end
-  fun assert_max_min[S: (Real[S] val & Number) =U8](range:Range[S], min:S, max:S, h:TestHelper)=>
+  fun assert_first_last[S: (Real[S] val & Number) =U8](range:Range[S], first:S, last:S, h:TestHelper)=>
       
-    let first = range.next()
-    h.assert_eq[S](first,min)
-    var last:S = 0
+    let first_from_range = range.next()
+    h.assert_eq[S](first_from_range, first)
+    var last_from_range:S = 0
     for v in range
     do
-      last=v
+      last_from_range=v
     end
-    h.assert_eq[S](last,max)
+    h.assert_eq[S](last_from_range,last)
 
 class RangeTests is UnitTest
 
@@ -57,15 +57,15 @@ class RangeTests is UnitTest
     RangeExclSimpleBackward[F32](h)?
 
 
-    RangeInit[I32](h)
-    RangeIncl[I32](h)
-    RangeTo[I32](h)
-    RangeInclSimple[I32](h)?
-    RangeInclStep3[I32](h)?
-    RangeExclSimple[I32](h)?
-    RangeExclStep3[I32](h)?
-    RangeInclSimpleBackward[I32](h)?
-    RangeExclSimpleBackward[I32](h)?
+    RangeInit[I16](h)
+    RangeIncl[I16](h)
+    RangeTo[I16](h)
+    RangeInclSimple[I16](h)?
+    RangeInclStep3[I16](h)?
+    RangeExclSimple[I16](h)?
+    RangeExclStep3[I16](h)?
+    RangeInclSimpleBackward[I16](h)?
+    RangeExclSimpleBackward[I16](h)?
 
 primitive RangeInit[T: (Real[T] val & Number)] is RangeTest
     fun apply(h: TestHelper) =>
@@ -205,13 +205,20 @@ class RangeCoverageTests is UnitTest
     RangeMinMaxTest[U8](h)
     RangeMinMaxTest[I8](h)
     
+    
 primitive RangeMinMaxTest[T: (Real[T] val & Number)] is RangeTest
     fun apply(h: TestHelper) =>
       let r:Range[T] = Range[T](
         Inclusive[T](T.min_value()),
          Inclusive[T](T.max_value()), 
          1)
-       assert_max_min[T](r, T.min_value(), T.max_value(),h)
+       assert_first_last[T](r, T.min_value(), T.max_value(),h)
+
+      let r2:Range[T] = Range[T](
+        Inclusive[T](T.max_value()),
+         Inclusive[T](T.min_value()), 
+         1)
+       assert_first_last[T](r2, T.max_value(), T.min_value(),h)
 
 
 class RangeErrorTests is UnitTest
