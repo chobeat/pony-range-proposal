@@ -1,6 +1,12 @@
 trait val Bound[T: (Real[T] val & Number) = USize] is (Equatable[Bound[T]] & Stringable)
+  // value of the bound
   fun get_value():T
+  // returns the actual number to use as an upper bound if according to the 
+  // direction of the range
   fun get_upper(is_forward:Bool):T
+  // returns the actual number to use as a lower bound if according to the 
+  // direction of the range
+  
   fun get_lower(is_forward:Bool):T
 
 
@@ -61,10 +67,15 @@ class val Exclusive[T: (Real[T] val & Number) = USize] is Bound[T]
 class Range[T: (Real[T] val & Number) = USize]
   let _begin: Bound[T]
   let _end: Bound[T]
+  // stores the increment or decrement to be performed at every step.
   let _step: T
+  // indicates if the range increases or decreases at every step.
   let _is_forward:Bool
+  // stores the next value to return.
   var _next:T
+  // represents the validity of the range.
   let _is_invalid:Bool
+  // indicates if the current step is the last one.
   var _is_last:Bool
 
   new create(b: Bound[T], e: Bound[T], step: T=1) =>
@@ -74,6 +85,7 @@ class Range[T: (Real[T] val & Number) = USize]
     // TODO: this condition doesn't always work with float arithmetics
     _is_invalid = (step < 1) or (_begin==_end)
     _is_last=false
+    // move this to a dedicated function once possible. This operation is performed here as an optimization
     _step = if _is_forward then
                step 
             else 
@@ -136,12 +148,9 @@ class Range[T: (Real[T] val & Number) = USize]
     end
 
   fun _bound_reached(current:T):Bool=>
-    if _is_forward
-    then 
-      current == _end.get_upper(_is_forward)
-    else
-      current == _end.get_lower(_is_forward)
-    end
+    let bound = if _is_forward _end.get_upper(_is_forward) else _end.get_lower(_is_forward) end
+
+    current == bound
 
   fun _is_last_value(current:T):Bool=>
     _will_overflow(current) or _bound_reached(current)
@@ -151,7 +160,6 @@ class Range[T: (Real[T] val & Number) = USize]
       _is_last=_is_last_value(current)
       _next = _next + _step
       current
-
 
 
   fun get_increment_step():T=>
