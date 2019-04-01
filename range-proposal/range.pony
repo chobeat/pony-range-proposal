@@ -170,6 +170,10 @@ class Range[T: (Real[T] val & Number) = USize]
     current == bound
 
   fun _is_last_value(current:T):Bool=>
+    // this function is defined in this way to avoid evaluating _will_overflow
+    // unless it's strictly necessary. The falseness of _bound_reached implies
+    // the falseness of _will_overflow that is necessary only if the bounds are
+    // the max or min values of a data type
    if _bound_reached(current)
    then
     true
