@@ -78,7 +78,24 @@ class Range[T: (Real[T] val & Number) = USize]
   // indicates if the current step is the last one.
   var _is_last:Bool
 
-  new create(b: Bound[T], e: Bound[T], step: T=1) =>
+  new create(b:T,e:T,step:T)=>
+    _begin= Inclusive[T](b)
+    _end = Exclusive[T](e)
+    _is_forward = _begin.get_value() < _end.get_value()
+    // TODO: this condition doesn't always work with float arithmetics
+    _is_invalid = (step < 1) or (_begin==_end)
+    _is_last=false
+    // move this to a dedicated function once possible. This operation is performed here as an optimization
+    _step = if _is_forward then
+               step 
+            else 
+              - step
+            end
+
+    _next = _begin.get_lower(_is_forward)
+
+
+  new define(b: Bound[T], e: Bound[T], step: T=1) =>
     _begin= b
     _end = e
     _is_forward = _begin.get_value() < _end.get_value()
@@ -153,8 +170,12 @@ class Range[T: (Real[T] val & Number) = USize]
     current == bound
 
   fun _is_last_value(current:T):Bool=>
-    _will_overflow(current) or _bound_reached(current)
-
+   if _bound_reached(current)
+   then
+    true
+  else 
+    _will_overflow(current)
+  end
   fun ref next(): T =>
       let current = _next
       _is_last=_is_last_value(current)
