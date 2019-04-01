@@ -78,9 +78,11 @@ class Range[T: (Real[T] val & Number) = USize]
   // indicates if the current step is the last one.
   var _is_last:Bool
 
-  new create(b:T,e:T,step:T)=>
-    _begin= Inclusive[T](b)
-    _end = Exclusive[T](e)
+  // this signature is defined as it is for compatibility with previous versions
+  new create(lower:T, upper:T,step:T=1)=>
+
+    _begin= Inclusive[T](lower)
+    _end = Exclusive[T](upper)
     _is_forward = _begin.get_value() < _end.get_value()
     // TODO: this condition doesn't always work with float arithmetics
     _is_invalid = (step < 1) or (_begin==_end)
