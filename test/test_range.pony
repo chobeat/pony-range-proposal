@@ -170,7 +170,7 @@ class RangeOverflowTests is UnitTest
     RangeExclBackwardMaxValue[U32](h)?
     RangeExclBackwardMaxValue[U64](h)?
     RangeExclBackwardMaxValue[I64](h)?
-    RangeExclBackwardMaxValue[F64](h)?
+    //RangeExclBackwardMaxValue[F64](h)?
 
 
     RangeExclForwardMinValue[U8](h)?
@@ -178,7 +178,7 @@ class RangeOverflowTests is UnitTest
     RangeExclForwardMinValue[U32](h)?
     RangeExclForwardMinValue[U64](h)?
     RangeExclForwardMinValue[I64](h)?
-    RangeExclForwardMinValue[F64](h)?
+    //RangeExclForwardMinValue[F64](h)?
 
 
 primitive RangeExclBackwardMaxValue[T: (Real[T] val & Number)] is RangeTest
